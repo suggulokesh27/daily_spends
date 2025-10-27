@@ -70,20 +70,11 @@ export default function ExpenseForm({ onSaved, expense }: ExpenseFormProps) {
   const onSubmit = async (data: Omit<Expense, "id">) => {
     setMessage(null);
     try {
-        const enhancedData = {
-      paid_by: data.paid_by,
-      paid_from: data.paid_from,
-      amount: data.amount,
-      description: data.description || null,
-      expense_date: data.expense_date,
-      category: data.category,
-      handover_id: selectedHandover?.id || null,
-    };
 
     // 🧾 Save or update expense
     const result = expense
-      ? await expenseService.update(expense.id, enhancedData)
-      : await expenseService.create(enhancedData);
+      ? await expenseService.update(expense.id, data)
+      : await expenseService.create(data);
 
       if (result.error) {
         setMessage("❌ " + result.error);

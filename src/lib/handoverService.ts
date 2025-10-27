@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Handover } from "@/types/handover_type";
 import { supabase } from "./supabaseClient";
 import { expenseService } from "./expenseService";

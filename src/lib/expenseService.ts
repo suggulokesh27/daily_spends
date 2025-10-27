@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { supabase } from "./supabaseClient"; // adjust your client path
 import { Expense } from "@/types/expense_type";
 
@@ -13,7 +14,8 @@ export const expenseService = {
   },
 
   async create(expense: Omit<Expense, 'id' | 'created_at'>): Promise<{ data: Expense | null; error: string | null }> {
-    const { data, error } = await supabase.from('expenses').insert(expense).select().single();
+    const { member, ...updateData } = expense;
+    const { data, error } = await supabase.from('expenses').insert(updateData).select().single();
     return { data: data as Expense | null, error: error?.message || null };
   },
 
