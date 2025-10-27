@@ -44,7 +44,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 lg:max-w-5xl mx-auto">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard

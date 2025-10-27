@@ -20,7 +20,8 @@ export const expenseService = {
   },
 
   async update(id: string, expense: Partial<Omit<Expense, 'id' | 'created_at'>>): Promise<{ data: Expense | null; error: string | null }> {
-    const { data, error } = await supabase.from('expenses').update(expense).eq('id', id).select().single();
+    const { member, ...updateData } = expense;
+    const { data, error } = await supabase.from('expenses').update(updateData).eq('id', id).select().single();
     return { data: data as Expense | null, error: error?.message || null };
   },
 
