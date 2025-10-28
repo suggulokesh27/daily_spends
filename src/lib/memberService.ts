@@ -9,7 +9,7 @@ export const memberService = {
 async getAll(): Promise<ServiceResult<any[]>> {
   try {
     const { data, error } = await supabase
-      .from("member_with_latest_advance")
+      .from("member_with_latest_advance_full")
       .select("*")
       .order("id", { ascending: true });
 

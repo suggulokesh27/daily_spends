@@ -11,6 +11,7 @@ import PageHeader from "../comman/PageHeader";
 import Modal from "../ui/Modal";
 import TotalSpendLabel from "../comman/TotalSpendLabel";
 import { totalmem } from "os";
+import { useAuth } from "@/context/AuthContext";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -18,6 +19,7 @@ export default function ExpensesSection() {
   const [rowData, setRowData] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const { user } = useAuth();
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
@@ -49,19 +51,23 @@ export default function ExpensesSection() {
         params.value ? new Date(params.value).toLocaleDateString() : "",
     },
     { field: "description", headerName: "Notes", flex: 2, minWidth: 150 },
-    {
-      headerName: "Edit",
-      minWidth: 80,
-      flex: 0.5,
-      cellRenderer: (params: any) => (
-        <button
-          onClick={() => setEditingExpense(params.data)}
-          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-        >
-          <Pencil className="w-4 h-4" />
-        </button>
-      ),
-    },
+    ...(user?.role === "admin"
+      ? [
+          {
+            headerName: "Edit",
+            minWidth: 80,
+            flex: 0.5,
+            cellRenderer: (params: any) => (
+              <button
+                onClick={() => setEditingExpense(params.data)}
+                className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            ),
+          } as ColDef<Expense>,
+        ]
+      : []),
   ];
 
   return (
