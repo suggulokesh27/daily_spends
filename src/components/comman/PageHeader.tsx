@@ -4,6 +4,7 @@ import { CirclePlus } from "lucide-react";
 import { ReactNode, useState } from "react";
 import Modal from "../ui/Modal";
 import { Authorized } from "@/context/AuthContext";
+import FilterButton from "./FilterButton";
 
 interface PageHeaderProps {
   title: string;
@@ -12,6 +13,8 @@ interface PageHeaderProps {
   modalContent?: ReactNode;  // content to show in modal
   onSaved?: () => void;      // callback when modal form saves
   buttonClassName?: string;  // extra styling for button
+  handleFilter?: (filters: any) => void; // filter handler
+  isFilterable?: boolean; // whether to show filter button
 }
 
 export default function PageHeader({
@@ -19,8 +22,9 @@ export default function PageHeader({
   addLabel = "Add",
   addIcon,
   modalContent,
-  onSaved,
   buttonClassName = "",
+  handleFilter,
+  isFilterable = false,
 }: PageHeaderProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -29,7 +33,8 @@ export default function PageHeader({
       {/* Header Title */}
       <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
 
-      {/* Add Button */}
+      <div className="flex items-center gap-3">
+        {isFilterable && <FilterButton onApply={handleFilter} />}
       <Authorized roles={["admin"]}>
       {modalContent && (
         <button
@@ -41,6 +46,8 @@ export default function PageHeader({
         </button>
       )}
       </Authorized>
+
+      </div>
 
       {/* Reusable Modal */}
       {modalContent && (

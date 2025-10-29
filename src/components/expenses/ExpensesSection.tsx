@@ -12,6 +12,7 @@ import Modal from "../ui/Modal";
 import TotalSpendLabel from "../comman/TotalSpendLabel";
 import { totalmem } from "os";
 import { useAuth } from "@/context/AuthContext";
+import FilterButton from "../comman/FilterButton";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -33,6 +34,17 @@ export default function ExpensesSection() {
       setLoading(false);
     }
   }, []);
+
+    const handleFilter = async (filters: any) => {
+    if (!filters.startDate && !filters.endDate && !filters.memberId) {
+      fetchExpenses();
+      return;
+    }
+
+    const { data, error } = await expenseService.expenseFilter(filters);
+    if (error) alert(error);
+    else setRowData(data || []);
+  };
 
   useEffect(() => {
     fetchExpenses();
@@ -77,8 +89,9 @@ export default function ExpensesSection() {
         addLabel="Add Expense"
         addIcon={<CirclePlus className="w-5 h-5" />}
         modalContent={<ExpenseForm onSaved={() => fetchExpenses()} />}
+        handleFilter={handleFilter}
+        isFilterable={true}
       />
-
       <div className="overflow-auto">
         <div style={{ minWidth: 700, height: 400 }}>
           <AgGridReact

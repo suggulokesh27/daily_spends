@@ -13,7 +13,7 @@ const navItems = [
   { name: "Daily Expense", href: "/expenses" },
   { name: "Advance", href: "/advance" },
   { name: "Members", href: "/members" },
-  { name: "Handovers", href: "/reports" },
+  { name: "Handover", href: "/reports" },
 ];
 
 export default function Header() {
