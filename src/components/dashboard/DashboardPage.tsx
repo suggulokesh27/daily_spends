@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, DollarSign, CreditCard, TrendingUp, IndianRupee } from "lucide-react";
+import { Users, CreditCard, TrendingUp, IndianRupee } from "lucide-react";
 import { memberService } from "@/lib/memberService";
 import { expenseService } from "@/lib/expenseService";
 import { advanceService } from "@/lib/advanceService";
@@ -52,12 +52,14 @@ export default function DashboardPage() {
           value={totalAdvances}
           icon={<CreditCard />}
           bgColor="bg-yellow-600"
+          to="/advance"
         />
         <StatsCard
           title="Total Expenses"
           value={totalExpenses}
           icon={<IndianRupee />}
           bgColor="bg-green-600"
+          to="/expenses"
         />
         <StatsCard
           title="Balance"
@@ -76,6 +78,7 @@ export default function DashboardPage() {
           value={totalMembers}
           icon={<Users />}
           bgColor="bg-blue-600"
+          to="/members"
         />
       </div>
 

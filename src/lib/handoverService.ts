@@ -83,24 +83,54 @@ export const handoverService = {
 
 recalExpenseForHandover: async function(handoverId: string) {
   const { data: handover } = await this.getById(handoverId);
-
   if (!handover) return;
 
   const { data: expenses } = await expenseService.getByHandoverId(handover.id);
-
   const totalSpent = expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
-  console.log(`Recalculating handover ${handover.id}: Total Spent = ${totalSpent}`);
 
   const diff = handover.handed_amount - totalSpent;
 
-  const enhnacedData = {
+  const enhancedData = {
     spent_amount: totalSpent,
     returned_amount: diff > 0 ? diff : 0,
     extra_spent: diff < 0 ? Math.abs(diff) : 0,
   };
 
-  await this.update(handover.id, enhnacedData);
+  await this.update(handover.id, enhancedData);
 },
+
+ async handoverFilter({
+    startDate,
+    endDate,
+    memberId,
+  }: {
+    startDate?: string;
+    endDate?: string;
+    memberId?: string;
+  }) {
+    try {
+      let query = supabase
+        .from("handover")
+        .select("*, member:member_id(name, phone)")
+        .order("handover_date", { ascending: false });
+
+      if (memberId) query = query.eq("member_id", memberId);
+
+      if (startDate && endDate)
+        query = query.gte("handover_date", startDate).lte("handover_date", endDate);
+      else if (startDate)
+        query = query.gte("handover_date", startDate);
+      else if (endDate)
+        query = query.lte("handover_date", endDate);
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return { data };
+    } catch (err: any) {
+      return { error: err.message };
+    }
+  },
 
 };

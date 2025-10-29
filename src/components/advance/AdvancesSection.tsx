@@ -21,7 +21,6 @@ export default function AdvancesSection() {
     setLoading(true);
     try {
       const { data, error } = await advanceService.getAll();
-      console.log("Fetched advances:", data, error);
       if (error) alert(error);
       else setRowData(data || []);
     } catch (err) {

@@ -70,11 +70,14 @@ export default function ExpenseForm({ onSaved, expense }: ExpenseFormProps) {
   const onSubmit = async (data: Omit<Expense, "id">) => {
     setMessage(null);
     try {
+      const enhancedData = { ...data,
+        handover_id: data.paid_from === "advance" ? selectedHandover?.id || null : null,
+       };
 
     // 🧾 Save or update expense
     const result = expense
-      ? await expenseService.update(expense.id, data)
-      : await expenseService.create(data);
+      ? await expenseService.update(expense.id, enhancedData)
+      : await expenseService.create(enhancedData);
 
       if (result.error) {
         setMessage("❌ " + result.error);

@@ -29,6 +29,17 @@ export default function HandoverSection() {
     }
   }, []);
 
+    const handleFilter = async (filters: any) => {
+      if (!filters.startDate && !filters.endDate && !filters.memberId) {
+        fetchHandovers();
+        return;
+      }
+
+      const { data, error } = await handoverService.handoverFilter(filters);
+      if (error) alert(error);
+      else setRowData(data || []);
+    };
+
   useEffect(() => { fetchHandovers(); }, [fetchHandovers]);
 
   const columnDefs: ColDef<Handover>[] = [
@@ -58,6 +69,8 @@ export default function HandoverSection() {
         addLabel="Add Handover"
         addIcon={<CirclePlus className="w-5 h-5"/>}
         modalContent={<HandoverForm onSaved={fetchHandovers} />}
+        handleFilter={handleFilter}
+        isFilterable={true}
       />
 
      <div className="overflow-auto">

@@ -33,5 +33,38 @@ export const expenseService = {
   async getByHandoverId(handoverId: string): Promise<{ data: Expense[] | null; error: string | null }> {
     const { data, error } = await supabase.from('expenses').select('*').eq('handover_id', handoverId);
     return { data: data as Expense[] | null, error: error?.message || null };
+  },
+
+  async expenseFilter({
+  startDate,
+  endDate,
+  memberId,
+}: {
+  startDate?: string;
+  endDate?: string;
+  memberId?: string;
+}) {
+  try {
+    let query = supabase
+      .from("expenses")
+      .select("*, member:paid_by(name, phone)")
+      .order("expense_date", { ascending: false });
+
+    if (memberId) query = query.eq("paid_by", memberId);
+    if (startDate && endDate)
+      query = query.gte("expense_date", startDate).lte("expense_date", endDate);
+    else if (startDate)
+      query = query.gte("expense_date", startDate);
+    else if (endDate)
+      query = query.lte("expense_date", endDate);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return { data };
+  } catch (err: any) {
+    return { error: err.message };
   }
+},
+
 };
