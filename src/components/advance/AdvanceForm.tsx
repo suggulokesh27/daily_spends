@@ -3,8 +3,10 @@
 import { useForm } from "react-hook-form";
 import { advanceService } from "@/lib/advanceService";
 import { memberService } from "@/lib/memberService";
+import { bhikshaService } from "@/lib/bhikshaService";
 import { useState, useEffect } from "react";
 import { Advance } from "@/types/advance_type";
+import { Bhiksha } from "@/types/bhiksha_type";
 
 interface AdvanceFormProps {
   onSaved: () => void;
@@ -12,90 +14,166 @@ interface AdvanceFormProps {
 }
 
 export default function AdvanceForm({ onSaved, advance }: AdvanceFormProps) {
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } =
-    useForm<Omit<Advance, "id" | "created_at">>({
-      defaultValues: {
-        member_id: "",
-        amount: 0,
-        note: "",
-        giving_date: new Date().toISOString().slice(0, 10),
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<Omit<Advance, "id" | "created_at">>({
+    defaultValues: advance || {
+      member_id: "",
+      bhiksha_id: "",
+      donation_name: "",
+      amount: 0,
+      note: "",
+      giving_date: new Date().toISOString().slice(0, 10),
+      source_type: "member",
+    },
+  });
 
   const [message, setMessage] = useState<string | null>(null);
   const [members, setMembers] = useState<{ id: string; name: string }[]>([]);
+  const [bhikshas, setBhikshas] = useState< Bhiksha[]>([]);
+  const sourceType = watch("source_type");
 
-  // 🔹 Fetch all members
+  // 🔹 Fetch members and bhikshas when needed
   useEffect(() => {
-    if (advance) return; // No need to fetch members when editing
-    const fetchMembers = async () => {
-      const { data, error } = await memberService.getAll();
-      if (!error && data) setMembers(data);
+    const fetchData = async () => {
+      const [mRes, bRes] = await Promise.all([
+        memberService.getAll(),
+        bhikshaService.getAll(),
+      ]);
+      if (!mRes.error && mRes.data) setMembers(mRes.data);
+      if (!bRes.error && bRes.data) setBhikshas(bRes.data);
     };
-    fetchMembers();
+    fetchData();
   }, []);
 
-  // 🔹 When editing, populate existing values
+  // 🔹 Populate existing values on edit
   useEffect(() => {
     if (advance) {
       reset({
-        member_id: advance.member_id,
+        member_id: advance.member_id || "",
+        bhiksha_id: advance.bhiksha_id || "",
+        donation_name: advance.donation_name || "",
         amount: advance.amount,
         note: advance.note || "",
         giving_date: advance.giving_date?.slice(0, 10),
+        source_type: advance.source_type || "member",
       });
     }
   }, [advance, reset]);
 
-  const onSubmit = async (data: Omit<Advance, "id" | "created_at">) => {
-    setMessage(null);
-    const result = advance
-      ? await advanceService.update(advance.id, data)
-      : await advanceService.create(data);
+  const onSubmit = async (formData: Omit<Advance, "id" | "created_at">) => {
+  const data = { ...formData }; // ✅ make a mutable copy
 
-    if (result.error) setMessage("❌ " + result.error);
-    else {
-      setMessage("✅ Advance saved!");
-      reset();
-      onSaved();
-    }
-  };
+  if (data.source_type === "member") {
+    data.bhiksha_id = null;
+    data.donation_name = null;
+  } else if (data.source_type === "bhiksha") {
+    data.member_id = null;
+    data.donation_name = null;
+  } else if (data.source_type === "donation") {
+    data.member_id = null;
+    data.bhiksha_id = null;
+  }
+
+  setMessage(null);
+  const result = advance
+    ? await advanceService.update(advance.id, data)
+    : await advanceService.create(data);
+
+  if (result.error) setMessage("❌ " + result.error);
+  else {
+    setMessage("✅ Advance saved!");
+    reset();
+    onSaved();
+  }
+};
+
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-3 p-4 bg-white dark:bg-gray-800 rounded-lg"
+      className="space-y-3 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md"
     >
-      {/* 🔹 Member Select */}
+      {/* 🔹 Source Type */}
       <div>
-        <label>Member</label>
-        {advance ? (
-          <p className="text-gray-600 dark:text-gray-400">
-            {advance?.member?.name || "Unknown Member"}
-          </p>
-        ) : (
-          <>
+        <label className="block mb-1 font-medium">Source Type</label>
         <select
-          {...register("member_id", { required: "Please select a member" })}
+          {...register("source_type", { required: "Please select a source type" })}
           className="w-full p-2 rounded border bg-gray-50 dark:bg-gray-700"
         >
-          <option value="">Select Member</option>
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name}
-            </option>
-          ))}
+          <option value="member">Member</option>
+          <option value="bhiksha">Bhiksha</option>
+          <option value="donation">Donation</option>
         </select>
-        {errors.member_id && (
-          <p className="text-red-500 text-sm">{errors.member_id.message}</p>
-        )}
-        </>
+        {errors.source_type && (
+          <p className="text-red-500 text-sm">{errors.source_type.message}</p>
         )}
       </div>
 
+      {/* 🔹 Member Select (if source_type = member) */}
+      {sourceType === "member" && (
+        <div>
+          <label className="block mb-1 font-medium">Member</label>
+          <select
+            {...register("member_id", { required: "Please select a member" })}
+            className="w-full p-2 rounded border bg-gray-50 dark:bg-gray-700"
+          >
+            <option value="">Select Member</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+          {errors.member_id && (
+            <p className="text-red-500 text-sm">{errors.member_id.message}</p>
+          )}
+        </div>
+      )}
+
+      {/* 🔹 Bhiksha Select (if source_type = bhiksha) */}
+      {sourceType === "bhiksha" && (
+        <div>
+          <label className="block mb-1 font-medium">Bhiksha</label>
+          <select
+            {...register("bhiksha_id", { required: "Please select a Bhiksha" })}
+            className="w-full p-2 rounded border bg-gray-50 dark:bg-gray-700"
+          >
+            <option value="">Select Bhiksha</option>
+            {bhikshas.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}-({b.donated})
+              </option>
+            ))}
+          </select>
+          {errors.bhiksha_id && (
+            <p className="text-red-500 text-sm">{errors.bhiksha_id.message}</p>
+          )}
+        </div>
+      )}
+
+      {/* 🔹 Donation Name Input (if source_type = donation) */}
+      {sourceType === "donation" && (
+        <div>
+          <label className="block mb-1 font-medium">Donation Name</label>
+          <input
+            {...register("donation_name", { required: "Donation name is required" })}
+            className="w-full p-2 rounded border bg-gray-50 dark:bg-gray-700"
+            placeholder="e.g. Temple Fund, Anonymous Donor"
+          />
+          {errors.donation_name && (
+            <p className="text-red-500 text-sm">{errors.donation_name.message}</p>
+          )}
+        </div>
+      )}
+
       {/* 🔹 Amount */}
       <div>
-        <label>Amount</label>
+        <label className="block mb-1 font-medium">Amount</label>
         <input
           type="number"
           step="0.01"
@@ -109,7 +187,7 @@ export default function AdvanceForm({ onSaved, advance }: AdvanceFormProps) {
 
       {/* 🔹 Giving Date */}
       <div>
-        <label>Giving Date</label>
+        <label className="block mb-1 font-medium">Giving Date</label>
         <input
           type="date"
           {...register("giving_date", { required: "Date is required" })}
@@ -122,7 +200,7 @@ export default function AdvanceForm({ onSaved, advance }: AdvanceFormProps) {
 
       {/* 🔹 Note */}
       <div>
-        <label>Note</label>
+        <label className="block mb-1 font-medium">Note</label>
         <input
           {...register("note")}
           className="w-full p-2 rounded border bg-gray-50 dark:bg-gray-700"

@@ -8,13 +8,14 @@ import FilterButton from "./FilterButton";
 
 interface PageHeaderProps {
   title: string;
-  addLabel?: string;         // optional text for button
-  addIcon?: ReactNode;       // optional custom icon
-  modalContent?: ReactNode;  // content to show in modal
-  onSaved?: () => void;      // callback when modal form saves
-  buttonClassName?: string;  // extra styling for button
-  handleFilter?: (filters: any) => void; // filter handler
-  isFilterable?: boolean; // whether to show filter button
+  addLabel?: string;
+  addIcon?: ReactNode;
+  modalContent?: ReactNode;
+  onSaved?: () => void;
+  buttonClassName?: string;
+  handleFilter?: (filters: any) => void;
+  isFilterable?: boolean;
+  children?: ReactNode; // 👈 Add this to allow search or custom controls
 }
 
 export default function PageHeader({
@@ -25,36 +26,34 @@ export default function PageHeader({
   buttonClassName = "",
   handleFilter,
   isFilterable = false,
+  children,
 }: PageHeaderProps) {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <div className="flex justify-between items-center mb-4">
-      {/* Header Title */}
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
+    <div className="flex flex-wrap justify-between items-center mb-4 gap-3">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        {title}
+      </h2>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
+        {children}
         {isFilterable && <FilterButton onApply={handleFilter} />}
-      <Authorized roles={["admin"]}>
-      {modalContent && (
-        <button
-          onClick={() => setShowModal(true)}
-          className={`flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg transition ${buttonClassName}`}
-        >
-          {addIcon || <CirclePlus className="w-5 h-5" />}
-          {addLabel && <span>{addLabel}</span>}
-        </button>
-      )}
-      </Authorized>
-
+        <Authorized roles={["admin"]}>
+          {modalContent && (
+            <button
+              onClick={() => setShowModal(true)}
+              className={`flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg transition ${buttonClassName}`}
+            >
+              {addIcon || <CirclePlus className="w-5 h-5" />}
+              {addLabel && <span>{addLabel}</span>}
+            </button>
+          )}
+        </Authorized>
       </div>
 
-      {/* Reusable Modal */}
       {modalContent && (
-        <Modal
-          show={showModal}
-          onClose={() => setShowModal(false)}
-        >
+        <Modal show={showModal} onClose={() => setShowModal(false)}>
           {modalContent}
         </Modal>
       )}
