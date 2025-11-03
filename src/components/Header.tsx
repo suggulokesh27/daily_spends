@@ -14,6 +14,7 @@ const navItems = [
   { name: "Advance", href: "/advance" },
   { name: "Members", href: "/members" },
   { name: "Handover", href: "/reports" },
+  { name: "Bhiksha", href: "/bhiksha" },
 ];
 
 export default function Header() {
