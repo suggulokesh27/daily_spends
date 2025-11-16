@@ -22,10 +22,10 @@ export default function MemberView({
     </div>
       <p className="text-sm text-gray-600 dark:text-gray-400">{member.phone}</p>
       <p className="text-sm text-gray-600 dark:text-gray-400">
-        Joined: {joinedDate ? new Date(joinedDate).toLocaleDateString() : "-"}
+        Joined: {member?.joined_date ? new Date(member?.joined_date).toLocaleDateString() : "-"}
       </p>
       <p className="text-sm text-gray-600 dark:text-gray-400">
-        Leaving: {leavingDate ? new Date(leavingDate).toLocaleDateString() : "-"}
+        Leaving: {member?.leaving_date ? new Date(member?.leaving_date).toLocaleDateString() : "-"}
       </p>
       <p className="text-sm text-gray-600 dark:text-gray-400">
         Active Days: {member.days_active || 0}
